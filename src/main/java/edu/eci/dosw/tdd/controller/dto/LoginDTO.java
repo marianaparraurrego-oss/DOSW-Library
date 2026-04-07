@@ -1,24 +1,18 @@
 package edu.eci.dosw.tdd.controller.dto;
+
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserDTO {
-
-    @NotBlank
-    private String id;
-
-    @NotBlank
-    private String name;
+@AllArgsConstructor
+public class LoginDTO {
 
     @NotBlank
     private String username;
 
     @NotBlank
     private String password;
-
-    @NotBlank
-    private String role;
 }

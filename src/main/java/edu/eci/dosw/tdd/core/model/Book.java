@@ -11,4 +11,6 @@ public class Book {
     private String title;
     private String author;
     private boolean available;
+    private int totalStock;
+    private int availableStock;
 }

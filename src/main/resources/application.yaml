@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/biblioteca
+    username: postgres
+    password: Ciclos12345.
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+
+jwt:
+    secret: clave-super-secreta-de-al-menos-32-caracteres
+    expiration: 86400000

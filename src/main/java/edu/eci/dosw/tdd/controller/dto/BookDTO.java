@@ -16,4 +16,7 @@ public class BookDTO {
 
     @NotBlank
     private String author;
+
+    private int totalStock;
+    private int availableStock;
 }

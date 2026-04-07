@@ -5,11 +5,26 @@ import edu.eci.dosw.tdd.core.model.User;
 
 public class UserMapper {
 
+    private UserMapper() {}
+
     public static UserDTO toDTO(User user) {
-        return new UserDTO(user.getId(), user.getName());
+        // No exponemos la contraseña en la respuesta
+        return new UserDTO(
+                user.getId(),
+                user.getName(),
+                user.getUsername(),
+                null,
+                user.getRole()
+        );
     }
 
     public static User toModel(UserDTO dto) {
-        return new User(dto.getId(), dto.getName());
+        return new User(
+                dto.getId(),
+                dto.getName(),
+                dto.getUsername(),
+                dto.getPassword(),  // el servicio la encriptará antes de persistir
+                dto.getRole()
+        );
     }
 }

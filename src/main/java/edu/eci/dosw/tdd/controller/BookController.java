@@ -26,7 +26,6 @@ public class BookController {
         this.service = service;
     }
 
-
     @Operation(summary = "Agregar un libro al catálogo")
     @PostMapping
     public ResponseEntity<Void> addBook(@Valid @RequestBody BookDTO dto,
@@ -35,7 +34,6 @@ public class BookController {
         service.addBook(book, quantity);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
 
     @Operation(summary = "Obtener todos los libros")
     @GetMapping
@@ -47,20 +45,25 @@ public class BookController {
         return ResponseEntity.ok(result);
     }
 
-
     @Operation(summary = "Obtener un libro por su ID")
     @GetMapping("/{id}")
     public ResponseEntity<BookDTO> getById(@PathVariable String id) {
-        Book book = service.getBookById(id);
-        return ResponseEntity.ok(BookMapper.toDTO(book));
+        return ResponseEntity.ok(BookMapper.toDTO(service.getBookById(id)));
     }
-
 
     @Operation(summary = "Actualizar disponibilidad de un libro")
     @PatchMapping("/{id}/availability")
     public ResponseEntity<Void> updateAvailability(@PathVariable String id,
                                                    @RequestParam boolean available) {
         service.updateAvailability(id, available);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Actualizar el stock total de un libro (solo Bibliotecario)")
+    @PatchMapping("/{id}/stock")
+    public ResponseEntity<Void> updateTotalStock(@PathVariable String id,
+                                                 @RequestParam int totalStock) {
+        service.updateTotalStock(id, totalStock);
         return ResponseEntity.ok().build();
     }
 }
