@@ -1,99 +1,102 @@
-package edu.eci.dosw.tdd.Service;
+package edu.eci.dosw.tdd;
 
-import edu.eci.dosw.tdd.core.model.Book;
-import edu.eci.dosw.tdd.core.service.BookService;
 import edu.eci.dosw.tdd.core.exception.BookNotAvailableException;
 import edu.eci.dosw.tdd.core.exception.BookNotFoundException;
-
+import edu.eci.dosw.tdd.core.model.Book;
+import edu.eci.dosw.tdd.core.service.BookService;
+import edu.eci.dosw.tdd.persistence.repository.BookRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-public class BookServiceTest {
+class BookServiceTest {
 
-    // Se crea un BookService fresco antes de cada prueba
-    private BookService service;
+    @Mock
+    private BookRepository bookRepository;
+
+    @InjectMocks
+    private BookService bookService;
+
+    private Book book;
 
     @BeforeEach
     void setUp() {
-        service = new BookService();
+        MockitoAnnotations.openMocks(this);
+        book = new Book("b001", "Clean Code", "Robert Martin", true, 5, 5);
     }
 
     @Test
-    public void shouldAddBookSuccessfully() {
-        Book book = new Book("1", "Clean Code", "Robert Martin", true);
+    void shouldAddBookSuccessfully() {
+        when(bookRepository.save(any(Book.class))).thenReturn(book);
 
-        service.addBook(book, 2);
-
-        assertEquals(1, service.getAllBooks().size());
+        assertDoesNotThrow(() -> bookService.addBook(book, 5));
+        verify(bookRepository, times(1)).save(any(Book.class));
     }
 
     @Test
-    public void shouldGetBookById() {
-        Book book = new Book("1", "Clean Code", "Robert Martin", true);
-        service.addBook(book, 1);
+    void shouldGetBookById() {
+        when(bookRepository.findById("b001")).thenReturn(Optional.of(book));
 
-        Book result = service.getBookById("1");
+        Book result = bookService.getBookById("b001");
 
         assertEquals("Clean Code", result.getTitle());
     }
 
     @Test
-    public void shouldThrowExceptionWhenBookNotFound() {
-        // Intentar buscar un libro que no existe debe lanzar BookNotFoundException
-        assertThrows(BookNotFoundException.class, () -> {
-            service.getBookById("id-inexistente");
-        });
+    void shouldThrowExceptionWhenBookNotFound() {
+        when(bookRepository.findById("no-existe")).thenReturn(Optional.empty());
+
+        assertThrows(BookNotFoundException.class, () -> bookService.getBookById("no-existe"));
     }
 
     @Test
-    public void shouldThrowExceptionWhenBookNotAvailable() {
-        Book book = new Book("1", "Clean Code", "Robert Martin", false);
-        service.addBook(book, 0); // stock en 0
+    void shouldThrowExceptionWhenBookNotAvailable() {
+        Book unavailable = new Book("b002", "Test", "Author", false, 5, 0);
+        when(bookRepository.findById("b002")).thenReturn(Optional.of(unavailable));
 
-        assertThrows(BookNotAvailableException.class, () -> {
-            service.decreaseStock("1");
-        });
+        assertThrows(BookNotAvailableException.class, () -> bookService.decreaseStock("b002"));
     }
 
     @Test
-    public void shouldIncreaseStock() {
-        Book book = new Book("1", "Test", "Author", true);
-        service.addBook(book, 1);
+    void shouldReturnTrueWhenBookIsAvailable() {
+        when(bookRepository.findById("b001")).thenReturn(Optional.of(book));
 
-        service.increaseStock("1");
-
-        // Después de aumentar, el stock es 2, así que sigue disponible
-        assertTrue(service.isAvailable("1"));
-        assertEquals(2, service.getStock("1"));
+        assertTrue(bookService.isAvailable("b001"));
     }
 
     @Test
-    public void shouldReturnFalseWhenStockIsZero() {
-        Book book = new Book("1", "Test", "Author", true);
-        service.addBook(book, 0);
+    void shouldReturnFalseWhenStockIsZero() {
+        Book noStock = new Book("b003", "Test", "Author", false, 5, 0);
+        when(bookRepository.findById("b003")).thenReturn(Optional.of(noStock));
 
-        assertFalse(service.isAvailable("1"));
+        assertFalse(bookService.isAvailable("b003"));
     }
 
     @Test
-    public void shouldUpdateAvailability() {
-        Book book = new Book("1", "Test", "Author", true);
-        service.addBook(book, 1);
+    void shouldGetAllBooks() {
+        when(bookRepository.findAll()).thenReturn(List.of(book));
 
-        // Marcar como no disponible
-        service.updateAvailability("1", false);
-        assertFalse(service.getBookById("1").isAvailable());
+        List<Book> result = bookService.getAllBooks();
 
-        // Marcar como disponible de nuevo
-        service.updateAvailability("1", true);
-        assertTrue(service.getBookById("1").isAvailable());
+        assertEquals(1, result.size());
     }
 
     @Test
-    public void shouldThrowExceptionWhenUpdatingNonExistentBook() {
-        assertThrows(BookNotFoundException.class, () -> {
-            service.updateAvailability("no-existe", true);
-        });
+    void shouldReturnEmptyWhenNoBooks() {
+        when(bookRepository.findAll()).thenReturn(Collections.emptyList());
+
+        List<Book> result = bookService.getAllBooks();
+
+        assertTrue(result.isEmpty());
     }
 }

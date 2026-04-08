@@ -1,44 +1,94 @@
-package edu.eci.dosw.tdd.Service;
+package edu.eci.dosw.tdd;
 
+import edu.eci.dosw.tdd.core.exception.UserNotFoundException;
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.core.service.UserService;
-import edu.eci.dosw.tdd.core.exception.UserNotFoundException;
-
+import edu.eci.dosw.tdd.persistence.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-public class UserServiceTest {
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-    private final UserService service = new UserService();
+class UserServiceTest {
 
-    @Test
-    public void shouldRegisterUserSuccessfully() {
-        User user = new User("1", "Andrea");
+    @Mock
+    private UserRepository userRepository;
 
-        service.registerUser(user);
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
-        List<User> users = service.getAllUsers();
+    @InjectMocks
+    private UserService userService;
 
-        assertEquals(1, users.size());
-        assertEquals("Andrea", users.get(0).getName());
+    private User user;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        user = new User("u001", "Andrea", "andrea", "pass123", "USER");
     }
 
     @Test
-    public void shouldReturnAllUsers() {
-        service.registerUser(new User("1", "Andrea"));
-        service.registerUser(new User("2", "Juan"));
+    void shouldRegisterUserSuccessfully() {
+        when(passwordEncoder.encode(any())).thenReturn("hashedPass");
+        when(userRepository.save(any(User.class))).thenReturn(user);
 
-        List<User> users = service.getAllUsers();
-
-        assertEquals(2, users.size());
+        assertDoesNotThrow(() -> userService.registerUser(user));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
-    public void shouldThrowExceptionWhenUserNotFound() {
-        assertThrows(UserNotFoundException.class, () -> {
-            service.getUserById("999");
-        });
+    void shouldReturnAllUsers() {
+        when(userRepository.findAll()).thenReturn(List.of(user));
+
+        List<User> result = userService.getAllUsers();
+
+        assertEquals(1, result.size());
+        assertEquals("Andrea", result.get(0).getName());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenNoUsers() {
+        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+
+        List<User> result = userService.getAllUsers();
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void shouldGetUserById() {
+        when(userRepository.findById("u001")).thenReturn(Optional.of(user));
+
+        User result = userService.getUserById("u001");
+
+        assertEquals("u001", result.getId());
+        assertEquals("Andrea", result.getName());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserNotFound() {
+        when(userRepository.findById("999")).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.getUserById("999"));
+    }
+
+    @Test
+    void shouldGetUserByUsername() {
+        when(userRepository.findByUsername("andrea")).thenReturn(Optional.of(user));
+
+        User result = userService.getUserByUsername("andrea");
+
+        assertEquals("andrea", result.getUsername());
     }
 }

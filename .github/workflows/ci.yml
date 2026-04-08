@@ -1,0 +1,106 @@
+name: CI/CD Pipeline - DOSW Library
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'microsoft'
+
+      - name: Compile project
+        run: mvn compile -B
+
+      - name: Upload compiled classes
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-classes
+          path: target/
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'microsoft'
+
+      - name: Run tests
+        run: mvn verify -B
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATA_MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: target/surefire-reports/
+
+  analysis:
+    name: Analysis
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'microsoft'
+
+      - name: Run code analysis
+        run: mvn verify -B
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATA_MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      - name: Generate coverage report
+        run: mvn jacoco:report -B
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: target/site/jacoco/
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy step
+        run: echo "En construcción ..."

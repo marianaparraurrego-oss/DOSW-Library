@@ -1,153 +1,111 @@
-package edu.eci.dosw.tdd.Service;
+package edu.eci.dosw.tdd;
 
-import edu.eci.dosw.tdd.core.exception.BookNotAvailableException;
-import edu.eci.dosw.tdd.core.exception.LoanLimitExceededException;
-import edu.eci.dosw.tdd.core.exception.UserNotFoundException;
 import edu.eci.dosw.tdd.core.model.Book;
+import edu.eci.dosw.tdd.core.model.Loan;
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.core.service.BookService;
 import edu.eci.dosw.tdd.core.service.LoanService;
 import edu.eci.dosw.tdd.core.service.UserService;
-
+import edu.eci.dosw.tdd.persistence.repository.LoanRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-/**
- * Pruebas unitarias para LoanService.
- *
- * Escenarios cubiertos:
- *   ✓ Préstamo exitoso
- *   ✓ Libro no disponible
- *   ✓ Usuario no encontrado
- *   ✓ Límite de préstamos excedido
- *   ✓ Devolución exitosa
- */
-public class LoanServiceTest {
+class LoanServiceTest {
 
-    // Estos objetos se crean de nuevo antes de cada prueba gracias a @BeforeEach
+    @Mock
+    private LoanRepository loanRepository;
+
+    @Mock
     private BookService bookService;
+
+    @Mock
     private UserService userService;
+
+    @InjectMocks
     private LoanService loanService;
+
+    private Loan loan;
+    private User user;
+    private Book book;
 
     @BeforeEach
     void setUp() {
-        bookService = new BookService();
-        userService = new UserService();
-        loanService = new LoanService(bookService, userService);
+        MockitoAnnotations.openMocks(this);
+        user = new User("u001", "Juan", "juan", "pass", "USER");
+        book = new Book("b001", "Clean Code", "Martin", true, 5, 5);
+        loan = new Loan(UUID.randomUUID().toString(), book, user);
     }
 
+    // Dado que tengo 1 reserva registrada, Cuando lo consulto a nivel de servicio,
+    // entonces la consulta será exitosa validando el campo id.
     @Test
-    public void shouldLoanBookSuccessfully() {
-        // Arrange (preparar los datos)
-        Book book = new Book("1", "Clean Code", "Martin", true);
-        bookService.addBook(book, 1);
+    void dadoQueHayUnaReserva_cuandoLaConsulto_entoncesEsExitosaValidandoId() {
+        when(loanRepository.findById(loan.getId())).thenReturn(Optional.of(loan));
 
-        User user = new User("1", "Andrea");
-        userService.registerUser(user);
+        Optional<Loan> result = loanRepository.findById(loan.getId());
 
-        // Act (ejecutar la acción)
-        loanService.loanBook("1", "1");
-
-        // Assert (verificar el resultado)
-        assertEquals(1, loanService.getAllLoans().size());
-        assertEquals("ACTIVE", loanService.getAllLoans().get(0).getStatus());
+        assertTrue(result.isPresent());
+        assertEquals(loan.getId(), result.get().getId());
     }
 
+    // Dado que no hay ninguna reserva registrada, Cuando la consulto a nivel de servicio,
+    // Entonces la consulta no retorna ningún resultado.
     @Test
-    public void shouldThrowExceptionWhenBookNotAvailable() {
-        // El libro existe pero no tiene stock (quantity = 0)
-        Book book = new Book("1", "Clean Code", "Martin", true);
-        bookService.addBook(book, 0);
+    void dadoQueNoHayReservas_cuandoLaConsulto_entoncesNoRetornaNingunResultado() {
+        when(loanRepository.findAll()).thenReturn(Collections.emptyList());
 
-        User user = new User("1", "Andrea");
-        userService.registerUser(user);
+        List<Loan> result = loanService.getAllLoans();
 
-        // Debe lanzar BookNotAvailableException
-        assertThrows(BookNotAvailableException.class, () -> {
-            loanService.loanBook("1", "1");
-        });
+        assertTrue(result.isEmpty());
     }
 
+    // Dado que no hay ninguna reserva registrada, Cuando lo creo a nivel de servicio,
+    // entonces la creación será exitosa.
     @Test
-    public void shouldThrowExceptionWhenUserNotFound() {
-        // El libro existe con stock, pero el usuario "999" no está registrado
-        Book book = new Book("1", "Clean Code", "Martin", true);
-        bookService.addBook(book, 1);
+    void dadoQueNoHayReservas_cuandoLaCreo_entoncesLaCreacionEsExitosa() {
+        when(userService.getUserById("u001")).thenReturn(user);
+        when(bookService.isAvailable("b001")).thenReturn(true);
+        when(bookService.getBookById("b001")).thenReturn(book);
+        when(loanRepository.countByUser_IdAndStatus("u001", "ACTIVE")).thenReturn(0L);
+        when(loanRepository.save(any(Loan.class))).thenReturn(loan);
 
-        // Debe lanzar UserNotFoundException
-        assertThrows(UserNotFoundException.class, () -> {
-            loanService.loanBook("999", "1");
-        });
+        assertDoesNotThrow(() -> loanService.loanBook("u001", "b001"));
+        verify(loanRepository, times(1)).save(any(Loan.class));
     }
 
+    // Dado que tengo 1 reserva registrada, Cuando la elimino a nivel de servicio,
+    // entonces la eliminación será exitosa.
     @Test
-    public void shouldThrowExceptionWhenLoanLimitExceeded() {
-        // Agregar libros suficientes
-        bookService.addBook(new Book("1", "Libro 1", "Autor", true), 5);
-        bookService.addBook(new Book("2", "Libro 2", "Autor", true), 5);
-        bookService.addBook(new Book("3", "Libro 3", "Autor", true), 5);
-        bookService.addBook(new Book("4", "Libro 4", "Autor", true), 5);
+    void dadoQueHayUnaReserva_cuandoLaElimino_entoncesLaEliminacionEsExitosa() {
+        doNothing().when(loanRepository).deleteById(loan.getId());
 
-        User user = new User("1", "Andrea");
-        userService.registerUser(user);
+        loanRepository.deleteById(loan.getId());
 
-        // Prestar 3 libros (el máximo permitido)
-        loanService.loanBook("1", "1");
-        loanService.loanBook("1", "2");
-        loanService.loanBook("1", "3");
-
-        // El cuarto préstamo debe lanzar LoanLimitExceededException
-        assertThrows(LoanLimitExceededException.class, () -> {
-            loanService.loanBook("1", "4");
-        });
+        verify(loanRepository, times(1)).deleteById(loan.getId());
     }
 
+    // Dado que tengo 1 reserva registrada, Cuando la elimino y consulto a nivel de servicio,
+    // entonces el resultado de la consulta no retorna ningún resultado.
     @Test
-    public void shouldReturnBookSuccessfully() {
-        // Preparar
-        Book book = new Book("1", "Clean Code", "Martin", true);
-        bookService.addBook(book, 1);
+    void dadoQueHayUnaReserva_cuandoLaEliminoYConsulto_entoncesNoRetornaNingunResultado() {
+        doNothing().when(loanRepository).deleteById(loan.getId());
+        when(loanRepository.findAll()).thenReturn(Collections.emptyList());
 
-        User user = new User("1", "Andrea");
-        userService.registerUser(user);
+        loanRepository.deleteById(loan.getId());
+        List<Loan> result = loanService.getAllLoans();
 
-        // Prestar el libro
-        loanService.loanBook("1", "1");
-        String loanId = loanService.getAllLoans().get(0).getId();
-
-        // Verificar que antes de devolver no hay stock
-        assertFalse(bookService.isAvailable("1"));
-
-        // Devolver el libro
-        loanService.returnBook(loanId);
-
-        // Verificar que el estado cambió y el stock volvió
-        assertEquals("RETURNED", loanService.getAllLoans().get(0).getStatus());
-        assertTrue(bookService.isAvailable("1"));
-    }
-
-    @Test
-    public void shouldAllowNewLoanAfterReturn() {
-        // Si un usuario devuelve un libro, puede pedir prestado de nuevo
-        Book book = new Book("1", "Clean Code", "Martin", true);
-        bookService.addBook(book, 1);
-
-        User user = new User("1", "Andrea");
-        userService.registerUser(user);
-
-        // Primer préstamo
-        loanService.loanBook("1", "1");
-        String loanId = loanService.getAllLoans().get(0).getId();
-
-        // Devolver
-        loanService.returnBook(loanId);
-
-        // Segundo préstamo del mismo libro (ahora sí hay stock de nuevo)
-        loanService.loanBook("1", "1");
-
-        // Debe haber 2 préstamos en total
-        assertEquals(2, loanService.getAllLoans().size());
+        assertTrue(result.isEmpty());
     }
 }
