@@ -1,4 +1,4 @@
-package edu.eci.dosw.tdd;
+package edu.eci.dosw.tdd.Service;
 
 import edu.eci.dosw.tdd.core.exception.BookNotAvailableException;
 import edu.eci.dosw.tdd.core.exception.BookNotFoundException;

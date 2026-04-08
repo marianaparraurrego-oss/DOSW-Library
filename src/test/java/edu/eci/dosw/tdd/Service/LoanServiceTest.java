@@ -1,4 +1,4 @@
-package edu.eci.dosw.tdd;
+package edu.eci.dosw.tdd.Service;
 
 import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.model.Loan;
