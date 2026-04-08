@@ -7,9 +7,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @SpringBootApplication
-@EnableJpaRepositories(basePackages = "edu.eci.dosw.tdd.persistence.repository")
-@EntityScan(basePackages = "edu.eci.dosw.tdd.persistence.entity")
-@EnableMongoRepositories
+@EnableJpaRepositories(basePackages = "edu.eci.dosw.tdd.persistence.relational.repository")
+@EntityScan(basePackages = "edu.eci.dosw.tdd.persistence.relational.entity")
+@EnableMongoRepositories(basePackages = "edu.eci.dosw.tdd.persistence.nonrelational.repository")
+
 public class DoswLibraryApplication {
 
 	public static void main(String[] args) {

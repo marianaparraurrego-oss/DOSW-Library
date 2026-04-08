@@ -6,6 +6,7 @@ import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.core.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/users")
 @Tag(name = "Usuarios", description = "Registro y consulta de usuarios")
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     private final UserService service;

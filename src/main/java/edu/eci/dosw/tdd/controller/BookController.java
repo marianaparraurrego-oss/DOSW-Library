@@ -6,6 +6,7 @@ import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.service.BookService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/books")
 @Tag(name = "Libros", description = "Operaciones sobre el catálogo de libros")
+@SecurityRequirement(name = "bearerAuth")
 public class BookController {
 
     private final BookService service;

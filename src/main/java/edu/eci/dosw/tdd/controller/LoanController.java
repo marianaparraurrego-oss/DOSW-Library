@@ -5,6 +5,7 @@ import edu.eci.dosw.tdd.controller.mapper.LoanMapper;
 import edu.eci.dosw.tdd.core.service.LoanService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +53,7 @@ public class LoanController {
     @Operation(summary = "Consultar mis préstamos (USER ve solo los suyos)")
     @GetMapping("/my")
     @PreAuthorize("hasRole('USER') or hasRole('LIBRARIAN')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<LoanDTO>> getMyLoans(Authentication auth) {
         // El subject del token es el userId
         String userId = (String) auth.getPrincipal();

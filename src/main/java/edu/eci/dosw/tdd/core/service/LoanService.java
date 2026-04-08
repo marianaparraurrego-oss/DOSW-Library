@@ -5,13 +5,11 @@ import edu.eci.dosw.tdd.core.exception.LoanLimitExceededException;
 import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.model.Loan;
 import edu.eci.dosw.tdd.core.model.User;
-import edu.eci.dosw.tdd.persistence.mapper.LoanPersistenceMapper;
 import edu.eci.dosw.tdd.persistence.repository.LoanRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class LoanService {
@@ -22,7 +20,9 @@ public class LoanService {
     private final BookService bookService;
     private final UserService userService;
 
-    public LoanService(BookService bookService, UserService userService, LoanRepository loanRepository) {
+    public LoanService(BookService bookService,
+                       UserService userService,
+                       LoanRepository loanRepository) {
         this.loanRepository = loanRepository;
         this.bookService = bookService;
         this.userService = userService;
@@ -44,14 +44,12 @@ public class LoanService {
 
         Book book = bookService.getBookById(bookId);
         Loan loan = new Loan(UUID.randomUUID().toString(), book, user);
-        loanRepository.save(LoanPersistenceMapper.toEntity(loan));
-
+        loanRepository.save(loan);
         bookService.decreaseStock(bookId);
     }
 
     public void returnBook(String loanId) {
         Loan loan = loanRepository.findById(loanId)
-                .map(LoanPersistenceMapper::toModel)
                 .orElseThrow(() -> new RuntimeException("Préstamo no encontrado con ID: " + loanId));
 
         if ("RETURNED".equals(loan.getStatus())) {
@@ -59,28 +57,19 @@ public class LoanService {
         }
 
         loan.returnBook();
-        loanRepository.save(LoanPersistenceMapper.toEntity(loan));
+        loanRepository.save(loan);
         bookService.increaseStock(loan.getBook().getId());
     }
 
     public List<Loan> getAllLoans() {
-        return loanRepository.findAll()
-                .stream()
-                .map(LoanPersistenceMapper::toModel)
-                .collect(Collectors.toList());
+        return loanRepository.findAll();
     }
 
     public List<Loan> getActiveLoansByUser(String userId) {
-        return loanRepository.findByUser_IdAndStatus(userId, "ACTIVE")
-                .stream()
-                .map(LoanPersistenceMapper::toModel)
-                .collect(Collectors.toList());
+        return loanRepository.findByUser_IdAndStatus(userId, "ACTIVE");
     }
 
     public List<Loan> getLoansByUser(String userId) {
-        return loanRepository.findByUser_Id(userId)
-                .stream()
-                .map(LoanPersistenceMapper::toModel)
-                .collect(Collectors.toList());
+        return loanRepository.findByUser_Id(userId);
     }
 }
