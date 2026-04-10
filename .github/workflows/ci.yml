@@ -111,9 +111,12 @@ jobs:
         - name: Build JAR
           run: mvn package -DskipTests -B
 
+        - name: Rename JAR
+          run: mv target/*.jar target/app.jar
+
         - name: Deploy to Azure Web App
           uses: azure/webapps-deploy@v2
           with:
             app-name: 'library-dosw'
             publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-            package: target/*.jar
+            package: target/app.jar
