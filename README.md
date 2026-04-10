@@ -68,3 +68,5 @@ Para correrlo: http://localhost:8080/swagger-ui/index.html
 ![img_3.png](img_3.png)
 
 ![img_4.png](img_4.png)
+
+### Parte 3
