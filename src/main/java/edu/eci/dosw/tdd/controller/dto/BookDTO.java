@@ -2,6 +2,8 @@ package edu.eci.dosw.tdd.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -19,4 +21,14 @@ public class BookDTO {
 
     private int totalStock;
     private int availableStock;
+
+    // Extendidos Parte 3
+    private List<String> categories;
+    private String publicationType;
+    private LocalDate publishedDate;
+    private String isbn;
+    private MetadataDTO metadata;
+    private String availabilityStatus;
+    private int borrowedCopies;
+    private LocalDate addedAt;
 }

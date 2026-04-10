@@ -35,7 +35,13 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        user = new User("u001", "Andrea", "andrea", "pass123", "USER");
+        user = User.builder()
+                .id("u001")
+                .name("Andrea")
+                .username("andrea")
+                .password("pass123")
+                .role("USER")
+                .build();
     }
 
     @Test

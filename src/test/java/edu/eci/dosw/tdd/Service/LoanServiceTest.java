@@ -43,13 +43,24 @@ class LoanServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        user = new User("u001", "Juan", "juan", "pass", "USER");
-        book = new Book("b001", "Clean Code", "Martin", true, 5, 5);
+        user = User.builder()
+                .id("u001")
+                .name("Juan")
+                .username("juan")
+                .password("pass")
+                .role("USER")
+                .build();
+        book = Book.builder()
+                .id("b001")
+                .title("Clean Code")
+                .author("Martin")
+                .available(true)
+                .totalStock(5)
+                .availableStock(5)
+                .build();
         loan = new Loan(UUID.randomUUID().toString(), book, user);
     }
 
-    // Dado que tengo 1 reserva registrada, Cuando lo consulto a nivel de servicio,
-    // entonces la consulta será exitosa validando el campo id.
     @Test
     void dadoQueHayUnaReserva_cuandoLaConsulto_entoncesEsExitosaValidandoId() {
         when(loanRepository.findById(loan.getId())).thenReturn(Optional.of(loan));
@@ -60,8 +71,6 @@ class LoanServiceTest {
         assertEquals(loan.getId(), result.get().getId());
     }
 
-    // Dado que no hay ninguna reserva registrada, Cuando la consulto a nivel de servicio,
-    // Entonces la consulta no retorna ningún resultado.
     @Test
     void dadoQueNoHayReservas_cuandoLaConsulto_entoncesNoRetornaNingunResultado() {
         when(loanRepository.findAll()).thenReturn(Collections.emptyList());
@@ -71,8 +80,6 @@ class LoanServiceTest {
         assertTrue(result.isEmpty());
     }
 
-    // Dado que no hay ninguna reserva registrada, Cuando lo creo a nivel de servicio,
-    // entonces la creación será exitosa.
     @Test
     void dadoQueNoHayReservas_cuandoLaCreo_entoncesLaCreacionEsExitosa() {
         when(userService.getUserById("u001")).thenReturn(user);
@@ -85,8 +92,6 @@ class LoanServiceTest {
         verify(loanRepository, times(1)).save(any(Loan.class));
     }
 
-    // Dado que tengo 1 reserva registrada, Cuando la elimino a nivel de servicio,
-    // entonces la eliminación será exitosa.
     @Test
     void dadoQueHayUnaReserva_cuandoLaElimino_entoncesLaEliminacionEsExitosa() {
         doNothing().when(loanRepository).deleteById(loan.getId());
@@ -96,8 +101,6 @@ class LoanServiceTest {
         verify(loanRepository, times(1)).deleteById(loan.getId());
     }
 
-    // Dado que tengo 1 reserva registrada, Cuando la elimino y consulto a nivel de servicio,
-    // entonces el resultado de la consulta no retorna ningún resultado.
     @Test
     void dadoQueHayUnaReserva_cuandoLaEliminoYConsulto_entoncesNoRetornaNingunResultado() {
         doNothing().when(loanRepository).deleteById(loan.getId());

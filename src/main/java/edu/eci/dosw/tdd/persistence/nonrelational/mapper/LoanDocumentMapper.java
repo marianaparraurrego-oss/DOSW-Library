@@ -5,11 +5,22 @@ import edu.eci.dosw.tdd.core.model.Loan;
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.persistence.nonrelational.document.LoanDocument;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class LoanDocumentMapper {
 
     private LoanDocumentMapper() {}
 
     public static Loan toModel(LoanDocument doc, Book book, User user) {
+        List<Loan.LoanHistory> history = doc.getHistory() == null
+                ? new ArrayList<>()
+                : doc.getHistory().stream()
+                .map(h -> new Loan.LoanHistory(h.getStatus(), h.getExecutedAt()))
+                .collect(Collectors.toList());
+
         return new Loan(
                 doc.getId(),
                 book,
@@ -21,6 +32,12 @@ public class LoanDocumentMapper {
     }
 
     public static LoanDocument toDocument(Loan loan) {
+        List<LoanDocument.LoanHistory> historyDocs = loan.getHistory() == null
+                ? new ArrayList<>()
+                : loan.getHistory().stream()
+                .map(h -> new LoanDocument.LoanHistory(h.getStatus(), h.getExecutedAt()))
+                .collect(Collectors.toList());
+
         LoanDocument doc = new LoanDocument();
         doc.setId(loan.getId());
         doc.setUserId(loan.getUser().getId());
@@ -28,14 +45,7 @@ public class LoanDocumentMapper {
         doc.setLoanDate(loan.getLoanDate());
         doc.setReturnDate(loan.getReturnDate());
         doc.setStatus(loan.getStatus());
-
-        // Agrega entrada al historial
-        LoanDocument.LoanHistory entry = new LoanDocument.LoanHistory(
-                loan.getStatus(),
-                loan.getLoanDate() != null ? loan.getLoanDate() : java.time.LocalDate.now()
-        );
-        doc.getHistory().add(entry);
-
+        doc.setHistory(historyDocs);
         return doc;
     }
 }

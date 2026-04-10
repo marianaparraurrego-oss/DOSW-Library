@@ -32,7 +32,14 @@ class BookServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        book = new Book("b001", "Clean Code", "Robert Martin", true, 5, 5);
+        book = Book.builder()
+                .id("b001")
+                .title("Clean Code")
+                .author("Robert Martin")
+                .available(true)
+                .totalStock(5)
+                .availableStock(5)
+                .build();
     }
 
     @Test
@@ -61,7 +68,14 @@ class BookServiceTest {
 
     @Test
     void shouldThrowExceptionWhenBookNotAvailable() {
-        Book unavailable = new Book("b002", "Test", "Author", false, 5, 0);
+        Book unavailable = Book.builder()
+                .id("b002")
+                .title("Test")
+                .author("Author")
+                .available(false)
+                .totalStock(5)
+                .availableStock(0)
+                .build();
         when(bookRepository.findById("b002")).thenReturn(Optional.of(unavailable));
 
         assertThrows(BookNotAvailableException.class, () -> bookService.decreaseStock("b002"));
@@ -76,7 +90,14 @@ class BookServiceTest {
 
     @Test
     void shouldReturnFalseWhenStockIsZero() {
-        Book noStock = new Book("b003", "Test", "Author", false, 5, 0);
+        Book noStock = Book.builder()
+                .id("b003")
+                .title("Test")
+                .author("Author")
+                .available(false)
+                .totalStock(5)
+                .availableStock(0)
+                .build();
         when(bookRepository.findById("b003")).thenReturn(Optional.of(noStock));
 
         assertFalse(bookService.isAvailable("b003"));

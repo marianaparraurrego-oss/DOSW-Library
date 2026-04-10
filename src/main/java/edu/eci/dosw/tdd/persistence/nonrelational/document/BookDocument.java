@@ -15,16 +15,21 @@ public class BookDocument {
 
     @Id
     private String id;
-
     private String title;
     private String author;
     private boolean available;
+    private int totalStock;
+    private int availableStock;
 
-    // Subdocumento embebido: metadata
+    // Extendidos Parte 3
+    private List<String> categories;
+    private String publicationType;
+    private LocalDate publishedDate;
+    private String isbn;
     private Metadata metadata;
-
-    // Subdocumento embebido: availability
-    private Availability availability;
+    private String availabilityStatus;
+    private int borrowedCopies;
+    private LocalDate addedAt;
 
     @Data
     @AllArgsConstructor
@@ -33,15 +38,5 @@ public class BookDocument {
         private int pages;
         private String language;
         private String publisher;
-    }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Availability {
-        private String status;
-        private int totalCopies;
-        private int availableCopies;
-        private int borrowedCopies;
     }
 }

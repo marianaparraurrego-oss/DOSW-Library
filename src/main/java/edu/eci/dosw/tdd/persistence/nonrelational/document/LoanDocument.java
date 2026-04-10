@@ -16,16 +16,12 @@ public class LoanDocument {
 
     @Id
     private String id;
-
-    // Referencias por ID (no embebidos)
     private String userId;
     private String bookId;
-
     private LocalDate loanDate;
     private LocalDate returnDate;
     private String status;
 
-    // Array de subdocumentos embebidos: historial del préstamo
     private List<LoanHistory> history = new ArrayList<>();
 
     @Data

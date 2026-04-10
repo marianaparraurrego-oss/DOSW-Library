@@ -4,7 +4,6 @@ import edu.eci.dosw.tdd.controller.dto.UserDTO;
 import edu.eci.dosw.tdd.controller.mapper.UserMapper;
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.core.service.UserService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,36 +22,34 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService service;
+    private final UserMapper userMapper;
 
-    public UserController(UserService service) {
+    public UserController(UserService service, UserMapper userMapper) {
         this.service = service;
+        this.userMapper = userMapper;
     }
-
 
     @Operation(summary = "Registrar un usuario nuevo")
     @PostMapping
     public ResponseEntity<Void> register(@Valid @RequestBody UserDTO dto) {
-        User user = UserMapper.toModel(dto);
+        User user = userMapper.toModel(dto);
         service.registerUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
 
     @Operation(summary = "Obtener todos los usuarios")
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAll() {
         List<UserDTO> result = service.getAllUsers()
                 .stream()
-                .map(UserMapper::toDTO)
+                .map(userMapper::toDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(result);
     }
 
-
     @Operation(summary = "Obtener un usuario por su ID")
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getById(@PathVariable String id) {
-        User user = service.getUserById(id);
-        return ResponseEntity.ok(UserMapper.toDTO(user));
+        return ResponseEntity.ok(userMapper.toDTO(service.getUserById(id)));
     }
 }

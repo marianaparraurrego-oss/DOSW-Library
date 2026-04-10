@@ -3,7 +3,6 @@ package edu.eci.dosw.tdd.controller;
 import edu.eci.dosw.tdd.controller.dto.LoanDTO;
 import edu.eci.dosw.tdd.controller.mapper.LoanMapper;
 import edu.eci.dosw.tdd.core.service.LoanService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,14 +18,16 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/loans")
 @Tag(name = "Préstamos", description = "Gestión de préstamos de libros")
+@SecurityRequirement(name = "bearerAuth")
 public class LoanController {
 
     private final LoanService service;
+    private final LoanMapper loanMapper;
 
-    public LoanController(LoanService service) {
+    public LoanController(LoanService service, LoanMapper loanMapper) {
         this.service = service;
+        this.loanMapper = loanMapper;
     }
-
 
     @Operation(summary = "Prestar un libro a un usuario")
     @PostMapping
@@ -37,29 +38,25 @@ public class LoanController {
         service.loanBook(userId, bookId);
     }
 
-
-
-    @Operation(summary = "Listar todos los préstamos (Solo librarian)")
+    @Operation(summary = "Listar todos los préstamos (solo LIBRARIAN)")
     @GetMapping
     @PreAuthorize("hasRole('LIBRARIAN')")
     public ResponseEntity<List<LoanDTO>> getAll() {
         List<LoanDTO> result = service.getAllLoans()
                 .stream()
-                .map(LoanMapper::toDTO)
+                .map(loanMapper::toDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "Consultar mis préstamos (USER ve solo los suyos)")
+    @Operation(summary = "Consultar mis préstamos")
     @GetMapping("/my")
     @PreAuthorize("hasRole('USER') or hasRole('LIBRARIAN')")
-    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<LoanDTO>> getMyLoans(Authentication auth) {
-        // El subject del token es el userId
         String userId = (String) auth.getPrincipal();
         List<LoanDTO> result = service.getLoansByUser(userId)
                 .stream()
-                .map(LoanMapper::toDTO)
+                .map(loanMapper::toDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(result);
     }
