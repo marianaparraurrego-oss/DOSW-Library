@@ -8,13 +8,16 @@ public class UserPersistenceMapper {
     private UserPersistenceMapper() {}
 
     public static User toModel(UserEntity entity) {
-        return new User(
-                entity.getId(),
-                entity.getName(),
-                entity.getUsername(),
-                entity.getPassword(),
-                entity.getRole()
-        );
+        return User.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .username(entity.getUsername())
+                .password(entity.getPassword())
+                .role(entity.getRole())
+                .email(entity.getEmail())
+                .membershipType(entity.getMembershipType())
+                .joinedAt(entity.getJoinedAt())
+                .build();
     }
 
     public static UserEntity toEntity(User user) {
@@ -23,7 +26,10 @@ public class UserPersistenceMapper {
                 user.getName(),
                 user.getUsername(),
                 user.getPassword(),
-                user.getRole()
+                user.getRole(),
+                user.getEmail(),
+                user.getMembershipType(),
+                user.getJoinedAt()
         );
     }
 }

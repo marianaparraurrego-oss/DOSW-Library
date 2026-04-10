@@ -8,13 +8,16 @@ public class UserDocumentMapper {
     private UserDocumentMapper() {}
 
     public static User toModel(UserDocument doc) {
-        return new User(
-                doc.getId(),
-                doc.getName(),
-                doc.getUsername(),
-                doc.getPassword(),
-                doc.getRole()
-        );
+        return User.builder()
+                .id(doc.getId())
+                .name(doc.getName())
+                .username(doc.getUsername())
+                .password(doc.getPassword())
+                .role(doc.getRole())
+                .email(doc.getEmail())
+                .membershipType(doc.getMembershipType())
+                .joinedAt(doc.getJoinedAt())
+                .build();
     }
 
     public static UserDocument toDocument(User user) {
@@ -23,7 +26,10 @@ public class UserDocumentMapper {
                 user.getName(),
                 user.getUsername(),
                 user.getPassword(),
-                user.getRole()
+                user.getRole(),
+                user.getEmail(),
+                user.getMembershipType(),
+                user.getJoinedAt()
         );
     }
 }
