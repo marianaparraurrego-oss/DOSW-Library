@@ -114,6 +114,6 @@ jobs:
         - name: Deploy to Azure Web App
           uses: azure/webapps-deploy@v2
           with:
-            app-name: 'library-dosw-dvdzbgcndagxg6h5'
+            app-name: 'library-dosw'
             publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
             package: target/*.jar
