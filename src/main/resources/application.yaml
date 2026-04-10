@@ -2,9 +2,9 @@ spring:
   profiles:
     active: mongo
   datasource:
-    url: jdbc:postgresql://localhost:5432/biblioteca
-    username: postgres
-    password: Ciclos12345.
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/biblioteca}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:Ciclos12345.}
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,9 +15,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     mongodb:
-      uri: mongodb://marianaparraurrego_db_user:xFm5DurDB5wd53Nt@ac-x7lezjw-shard-00-00.hhhdyyf.mongodb.net:27017,ac-x7lezjw-shard-00-01.hhhdyyf.mongodb.net:27017,ac-x7lezjw-shard-00-02.hhhdyyf.mongodb.net:27017/?ssl=true&replicaSet=atlas-n8appy-shard-0&authSource=admin&appName=Cluster0
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://marianaparraurrego_db_user:xFm5DurDB5wd53Nt@ac-x7lezjw-shard-00-00.hhhdyyf.mongodb.net:27017,ac-x7lezjw-shard-00-01.hhhdyyf.mongodb.net:27017,ac-x7lezjw-shard-00-02.hhhdyyf.mongodb.net:27017/?ssl=true&replicaSet=atlas-n8appy-shard-0&authSource=admin&appName=Cluster0}
       database: biblioteca_db
 
 jwt:
-  secret: clave-super-secreta-de-al-menos-32-caracteres
+  secret: ${JWT_SECRET:clave-super-secreta-de-al-menos-32-caracteres}
   expiration: 86400000
