@@ -68,3 +68,17 @@ Para correrlo: http://localhost:8080/swagger-ui/index.html
 ![img_3.png](img_3.png)
 
 ![img_4.png](img_4.png)
+
+## Parte 3
+
+### Diagrama no relacional
+
+![img_5.png](img_5.png)
+
+### pipeline
+
+![img_7.png](img_7.png)
+
+### Reto 8
+
+![img_6.png](img_6.png)
